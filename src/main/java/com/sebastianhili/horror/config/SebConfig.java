@@ -60,6 +60,11 @@ public final class SebConfig {
     public static final DoubleValue REGEN_PER_SECOND;
     public static final DoubleValue TELEPORT_ON_HIT_CHANCE;
 
+    // boss fight
+    public static final BooleanValue BOSS_FIGHT;
+    public static final IntValue REFUSALS_FOR_MAP;
+    public static final DoubleValue BOSS_DAMAGE;
+
     // spawning
     public static final IntValue FIRST_ARRIVAL_MINUTES;
     public static final IntValue RETURN_AFTER_DEATH_MINUTES;
@@ -119,6 +124,12 @@ public final class SebConfig {
         RETALIATE_HITS = b.comment("Hits from one player within 15 seconds before he charges them").defineInRange("retaliateHits", 5, 1, 1000);
         REGEN_PER_SECOND = b.comment("Health regenerated per second").defineInRange("regenPerSecond", 0.5, 0.0, 100.0);
         TELEPORT_ON_HIT_CHANCE = b.comment("Chance he blinks away when hit").defineInRange("teleportOnHitChance", 0.25, 0.0, 1.0);
+        b.pop();
+
+        b.comment("The boss fight in The Red (song: The World Looks Red)").push("boss");
+        BOSS_FIGHT = b.comment("Refusing him enough times gives you 'Exhibit A'; showing it to him starts the boss fight").define("enabled", true);
+        REFUSALS_FOR_MAP = b.comment("Refusals in a row (without giving him a penny in between) before you get the map").defineInRange("refusalsForMap", 5, 1, 100);
+        BOSS_DAMAGE = b.comment("Multiplier for all boss attack damage. 0.5 = easier, 1.5 = harder").defineInRange("damageMultiplier", 1.0, 0.0, 10.0);
         b.pop();
 
         b.comment("Natural arrival (Overworld only)").push("spawning");

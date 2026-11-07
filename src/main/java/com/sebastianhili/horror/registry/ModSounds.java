@@ -15,6 +15,8 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> RAGE_SCREAM = register("rage_scream");
     public static final RegistryObject<SoundEvent> PENNY_CLINK = register("penny_clink");
     public static final RegistryObject<SoundEvent> STING = register("sting");
+    public static final RegistryObject<SoundEvent> BOSS_MUSIC = register("boss_music");
+    public static final RegistryObject<SoundEvent> SILENCE = register("silence");
 
     private static RegistryObject<SoundEvent> register(String name) {
         return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(SebHorrorMod.MODID, name)));

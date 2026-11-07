@@ -187,7 +187,39 @@ for d in DAMAGE:
 for t in ["bypasses_armor", "bypasses_effects", "bypasses_resistance", "bypasses_enchantments",
           "bypasses_invulnerability", "bypasses_shield", "always_most_significant_fall"][:6]:
     tag(f"data/minecraft/tags/damage_type/{t}.json", [f"{M}:{d}" for d in DAMAGE])
-tag("data/minecraft/tags/damage_type/is_lightning.json", [f"{M}:penny_lie"])
+# boss attacks: ordinary damage (armour and protection help), each with its own death message
+BOSS_DAMAGE = {
+    "boss_dash": "%1$s was trampled by Sebastian Hili in the red",
+    "boss_penny": "%1$s was pelted to death with pennies",
+    "boss_eruption": "%1$s was swallowed by the red",
+    "boss_slash": "%1$s turned around too late",
+    "boss_wave": "%1$s forgot to jump",
+    "boss_lightning": "%1$s was struck by red lightning",
+    "boss_stalk": "%1$s was found in the dark",
+}
+for d in BOSS_DAMAGE:
+    w(f"data/{M}/damage_type/{d}.json", {"message_id": f"{M}.{d}", "scaling": "never", "exhaustion": 0.1})
+tag("data/minecraft/tags/damage_type/is_lightning.json", [f"{M}:penny_lie", f"{M}:boss_lightning"])
+tag("data/minecraft/tags/damage_type/is_fire.json", [f"{M}:boss_eruption"])
+tag("data/minecraft/tags/damage_type/is_projectile.json", [f"{M}:boss_penny"])
+
+# ------------------------------------------------------------ the red pocket dimension
+w(f"data/{M}/dimension_type/the_red.json", {
+    "ultrawarm": True, "natural": False, "piglin_safe": False, "respawn_anchor_works": False,
+    "bed_works": False, "has_raids": False, "has_skylight": False, "has_ceiling": False,
+    "coordinate_scale": 1.0, "ambient_light": 0.35, "fixed_time": 18000, "logical_height": 256,
+    "effects": "minecraft:the_nether", "infiniburn": "#minecraft:infiniburn_nether",
+    "min_y": 0, "height": 256, "monster_spawn_light_level": 0, "monster_spawn_block_light_limit": 0})
+w(f"data/{M}/dimension/the_red.json", {
+    "type": f"{M}:the_red",
+    "generator": {"type": "minecraft:flat", "settings": {
+        "biome": f"{M}:the_red", "layers": [], "lakes": False, "features": False, "structure_overrides": []}}})
+w(f"data/{M}/worldgen/biome/the_red.json", {
+    "has_precipitation": False, "temperature": 2.0, "downfall": 0.0,
+    "effects": {"fog_color": 0x6E0A0A, "sky_color": 0x400000, "water_color": 0x8A1010, "water_fog_color": 0x3A0000,
+                "particle": {"options": {"type": "minecraft:crimson_spore"}, "probability": 0.03},
+                "music": {"sound": f"{M}:silence", "min_delay": 24000, "max_delay": 24000, "replace_current_music": True}},
+    "spawners": {}, "spawn_costs": {}, "carvers": {}, "features": []})
 
 # ------------------------------------------------------------ advancements
 def adv(name, parent, icon, title, desc, criteria, frame="task", hidden=False, announce=True, background=None):
@@ -228,6 +260,10 @@ adv("debt_collector", "root", "minecraft:netherite_sword", "Debt Collector", "Ki
                 "conditions": {"entity": [{"condition": "minecraft:entity_properties", "entity": "this",
                                            "predicate": {"type": f"{M}:sebastian_hili"}}]}}},
     frame="challenge")
+adv("evidence", "mint_condition", "minecraft:filled_map", "Exhibit A",
+    "Refuse Sebastian Hili five times in a row and receive something", CODE, hidden=True)
+adv("the_world_looks_red", "evidence", "minecraft:crimson_nylium", "The World Looks Red",
+    "Survive Sebastian Hili until the song ends", CODE, frame="challenge", hidden=True)
 adv("good_morning", "root", "minecraft:red_bed", "Good Morning", "Wake up to find someone watching you sleep",
     CODE, hidden=True)
 
@@ -239,7 +275,11 @@ SOUNDS = {
     "penny_clink": "Penny clinks",
     "sting": "Something is behind you",
 }
-w(f"assets/{M}/sounds.json", {k: {"subtitle": f"subtitles.{M}.{k}", "sounds": [f"{M}:{k}"]} for k in SOUNDS})
+sounds = {k: {"subtitle": f"subtitles.{M}.{k}", "sounds": [f"{M}:{k}"]} for k in SOUNDS}
+sounds["boss_music"] = {"subtitle": f"subtitles.{M}.boss_music",
+                        "sounds": [{"name": f"{M}:music/the_world_looks_red", "stream": True}]}
+sounds["silence"] = {"sounds": []}
+w(f"assets/{M}/sounds.json", sounds)
 
 # ------------------------------------------------------------ lang
 LANG.update({
@@ -264,6 +304,12 @@ LANG.update({
     f"death.attack.{M}.penny_lie.player": "%1$s lied to %2$s about a penny and was struck down",
     f"death.attack.{M}.penny_lie.item": "%1$s lied to %2$s about a penny and was struck down",
 })
+for k, v in BOSS_DAMAGE.items():
+    for suffix in ("", ".player", ".item"):
+        LANG[f"death.attack.{M}.{k}{suffix}"] = v
+LANG[f"subtitles.{M}.boss_music"] = "The World Looks Red plays"
+LANG[f"item.{M}.burned_penny_map"] = "Exhibit A"
+LANG[f"item.{M}.burned_penny_map.lore"] = "A burned penny. Show it to him. If you dare."
 for k, v in SOUNDS.items():
     LANG[f"subtitles.{M}.{k}"] = v
 w(f"assets/{M}/lang/en_us.json", dict(sorted(LANG.items())))

@@ -35,7 +35,10 @@ public final class ForgeEvents {
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.START) return;
+        if (event.phase == TickEvent.Phase.END) {
+            com.sebastianhili.horror.boss.BossFight.tickActive();
+            return;
+        }
         Runnable r;
         while ((r = NEXT_TICK.poll()) != null) {
             r.run();
@@ -65,6 +68,48 @@ public final class ForgeEvents {
     @SubscribeEvent
     public static void onServerStopped(net.minecraftforge.event.server.ServerStoppedEvent event) {
         SebastianEntity.clearActive();
+    }
+
+    // ---- the boss fight in The Red
+
+    @SubscribeEvent
+    public static void onDeath(net.minecraftforge.event.entity.living.LivingDeathEvent event) {
+        if (event.getEntity() instanceof ServerPlayer sp) {
+            com.sebastianhili.horror.boss.BossFight.onArenaDeath(sp);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onRespawn(net.minecraftforge.event.entity.player.PlayerEvent.PlayerRespawnEvent event) {
+        if (event.getEntity() instanceof ServerPlayer sp) {
+            com.sebastianhili.horror.boss.BossFight.onRespawn(sp);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onLogin(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer sp) {
+            com.sebastianhili.horror.boss.BossFight.onLogin(sp);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onLogout(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer sp) {
+            com.sebastianhili.horror.boss.BossFight.onLogout(sp);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onTravel(net.minecraftforge.event.entity.EntityTravelToDimensionEvent event) {
+        if (com.sebastianhili.horror.boss.BossFight.shouldBlockTravel(event.getEntity())) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onServerStopping(net.minecraftforge.event.server.ServerStoppingEvent event) {
+        com.sebastianhili.horror.boss.BossFight.onServerStopping();
     }
 
     private ForgeEvents() {

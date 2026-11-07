@@ -33,7 +33,7 @@ public final class DemoFriends {
 
     @SubscribeEvent
     public static void onCommands(RegisterCommandsEvent event) {
-        if (!Boolean.getBoolean("sebhorror.demo")) return;
+        if ("false".equals(System.getProperty("sebhorror.demo", "false"))) return;
         event.getDispatcher().register(Commands.literal("sebdemo").requires(s -> s.hasPermission(2))
                 .then(Commands.literal("friends")
                         .then(Commands.argument("a", BlockPosArgument.blockPos())

@@ -1,5 +1,7 @@
 package com.sebastianhili.horror.entity;
 
+import com.sebastianhili.horror.boss.BossFight;
+import com.sebastianhili.horror.boss.BurnedPennyMap;
 import com.sebastianhili.horror.config.SebConfig;
 import com.sebastianhili.horror.logic.BurnRules;
 import com.sebastianhili.horror.logic.ChatAnswer;
@@ -95,6 +97,10 @@ import java.util.IdentityHashMap;
 public class SebastianEntity extends PathfinderMob {
     private static final EntityDataAccessor<Integer> DATA_STATE =
             SynchedEntityData.defineId(SebastianEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> DATA_BOSS =
+            SynchedEntityData.defineId(SebastianEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Float> DATA_FADE =
+            SynchedEntityData.defineId(SebastianEntity.class, EntityDataSerializers.FLOAT);
 
     /**
      * Every Sebastian currently loaded on the server (used for chat answers and burning pennies).
@@ -189,6 +195,8 @@ public class SebastianEntity extends PathfinderMob {
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(DATA_STATE, SebState.WATCHING.ordinal());
+        this.entityData.define(DATA_BOSS, false);
+        this.entityData.define(DATA_FADE, 1.0F);
     }
 
     @Override
@@ -235,6 +243,32 @@ public class SebastianEntity extends PathfinderMob {
         return SebState.byId(this.entityData.get(DATA_STATE));
     }
 
+    /** The boss-fight Sebastian in The Red. Driven by BossFight instead of the normal state machine. */
+    public boolean isBoss() {
+        return this.entityData.get(DATA_BOSS);
+    }
+
+    public void setBoss(boolean boss) {
+        this.entityData.set(DATA_BOSS, boss);
+        this.setInvulnerable(boss);
+        this.autonomous = !boss;
+        this.natural = false;
+        if (boss) {
+            var health = getAttribute(Attributes.MAX_HEALTH);
+            if (health != null) health.setBaseValue(1024.0D); // the most Minecraft allows
+            setHealth(getMaxHealth());
+        }
+    }
+
+    /** 1 = solid, 0 = gone. He fades out when he tires at the end of the song. */
+    public float getFade() {
+        return this.entityData.get(DATA_FADE);
+    }
+
+    public void setFade(float fade) {
+        this.entityData.set(DATA_FADE, Mth.clamp(fade, 0.0F, 1.0F));
+    }
+
     public int getPennies() {
         return pennies;
     }
@@ -273,7 +307,7 @@ public class SebastianEntity extends PathfinderMob {
         List<SebastianEntity> out = new ArrayList<>();
         synchronized (ACTIVE) {
             for (SebastianEntity s : ACTIVE) {
-                if (s.level() == level && s.isAlive()) {
+                if (s.level() == level && s.isAlive() && !s.isBoss()) {
                     out.add(s);
                 }
             }
@@ -285,7 +319,7 @@ public class SebastianEntity extends PathfinderMob {
         synchronized (ACTIVE) {
             List<SebastianEntity> out = new ArrayList<>();
             for (SebastianEntity s : ACTIVE) {
-                if (s.isAlive()) {
+                if (s.isAlive() && !s.isBoss()) {
                     out.add(s);
                 }
             }
@@ -354,6 +388,13 @@ public class SebastianEntity extends PathfinderMob {
     @Override
     protected void customServerAiStep() {
         super.customServerAiStep();
+        if (isBoss()) {
+            // BossFight moves and attacks with him. A leftover boss (e.g. after a restart) just leaves.
+            BossFight fight = BossFight.get();
+            if (fight == null || fight.boss() != this) discard();
+            if (hurtLineCooldown > 0) hurtLineCooldown--;
+            return;
+        }
         ServerLevel level = (ServerLevel) level();
         stateTicks++;
         if (hurtLineCooldown > 0) hurtLineCooldown--;
@@ -600,15 +641,15 @@ public class SebastianEntity extends PathfinderMob {
         double dist = distanceTo(p);
 
         if (dist > SebConfig.BEG_RUN_DISTANCE.get()) {
-            startCharge(p, SebLines.CHARGE_RAN);
+            refused(p, SebLines.CHARGE_RAN);
             return;
         }
         if (!PennyLogic.isHoldingPenny(p) && stateTicks > 10) {
-            startCharge(p, SebLines.CHARGE_PUT_AWAY);
+            refused(p, SebLines.CHARGE_PUT_AWAY);
             return;
         }
         if (stateTicks >= timeout) {
-            startCharge(p, SebLines.CHARGE_TIMEOUT);
+            refused(p, SebLines.CHARGE_TIMEOUT);
             return;
         }
 
@@ -632,10 +673,37 @@ public class SebastianEntity extends PathfinderMob {
         }
     }
 
+    /** The player refused to hand the penny over. Usually he charges; the Nth refusal in a row earns Exhibit A instead. */
+    private void refused(ServerPlayer p, String[] lines) {
+        if (BurnedPennyMap.onRefusal(this, p)) {
+            begCooldowns.put(p.getUUID(), level().getGameTime() + 20L * 60);
+            setState(SebState.WATCHING);
+            return;
+        }
+        startCharge(p, lines);
+    }
+
     /** Right-clicking him with a penny hands it over. */
     @Override
     protected InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
+        if (BurnedPennyMap.isMap(stack) && !isBoss()) {
+            if (level().isClientSide) {
+                return InteractionResult.SUCCESS;
+            }
+            if (BossFight.isActive()) {
+                SebChat.say(this, "not now.");
+            } else if (!SebConfig.BOSS_FIGHT.get()) {
+                SebChat.say(this, "...put that away. i don't want to look at it.");
+            } else if (player instanceof ServerPlayer sp) {
+                ItemStack shown = stack.copy();
+                stack.shrink(1); // he takes it from you
+                if (!BossFight.start(this, sp)) {
+                    player.getInventory().add(shown);
+                }
+            }
+            return InteractionResult.CONSUME;
+        }
         if (!PennyLogic.isPenny(stack)) {
             return super.mobInteract(player, hand);
         }
@@ -656,6 +724,7 @@ public class SebastianEntity extends PathfinderMob {
     public void acceptPenny(Player player, ItemStack stack) {
         stack.shrink(1);
         pennies++;
+        BurnedPennyMap.resetRefusals(player);
         level().playSound(null, getX(), getY(), getZ(), ModSounds.PENNY_CLINK.get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
         ((ServerLevel) level()).sendParticles(ParticleTypes.HAPPY_VILLAGER, getX(), getEyeY() + 0.4, getZ(), 6, 0.3, 0.2, 0.3, 0);
         SebChat.say(this, SebLines.pick(random, SebLines.THANKS));
@@ -1374,6 +1443,13 @@ public class SebastianEntity extends PathfinderMob {
         if (level().isClientSide) {
             return super.hurt(source, amount);
         }
+        if (isBoss() && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+            if (source.getEntity() instanceof ServerPlayer && hurtLineCooldown <= 0) {
+                SebChat.say(this, SebLines.pick(random, new String[]{"that tickles.", "you can't hurt me here.", "keep swinging.", "no."}));
+                hurtLineCooldown = 100;
+            }
+            return false;
+        }
         if (source.is(DamageTypes.IN_WALL)) {
             ServerPlayer p = getTargetPlayer();
             if (p != null) blinkNear(p, SebConfig.WATCH_MIN.get(), SebConfig.WATCH_MAX.get(), true);
@@ -1423,7 +1499,7 @@ public class SebastianEntity extends PathfinderMob {
 
     @Override
     public void die(DamageSource source) {
-        if (!level().isClientSide && !isRemoved() && !dead) {
+        if (!level().isClientSide && !isRemoved() && !dead && !isBoss()) {
             SebChat.say(this, SebLines.pick(random, SebLines.DEATH));
             closeContainer();
             if (natural) {
@@ -1522,6 +1598,7 @@ public class SebastianEntity extends PathfinderMob {
         tag.putBoolean("NaturalArrival", natural);
         tag.putLong("NextSearch", nextSearchTime);
         tag.putBoolean("Autonomous", autonomous);
+        tag.putBoolean("Boss", isBoss());
     }
 
     @Override
@@ -1531,6 +1608,7 @@ public class SebastianEntity extends PathfinderMob {
         natural = tag.getBoolean("NaturalArrival");
         nextSearchTime = tag.contains("NextSearch") ? tag.getLong("NextSearch") : -1;
         autonomous = !tag.contains("Autonomous") || tag.getBoolean("Autonomous");
+        if (tag.getBoolean("Boss")) entityData.set(DATA_BOSS, true);
         setCustomName(SebChat.name());
     }
 }

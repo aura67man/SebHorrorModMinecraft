@@ -2,6 +2,7 @@
 # Records the scripted demo video on a headless Linux box (or any X11 desktop).
 #   needs: Xvfb, ffmpeg (libx264), pulseaudio (optional, for sound), JDK 17
 #   usage: tools/record_demo.sh [output.mp4]
+#          SEB_DEMO=boss CRF=26 tools/record_demo.sh demo/boss_fight.mp4   (the boss fight video)
 set -uo pipefail
 cd "$(dirname "$0")/.."
 OUT="${1:-demo/SebastianHiliHorror_demo.mp4}"
@@ -51,7 +52,7 @@ ffmpeg -hide_banner -loglevel error -y -f x11grab -framerate 30 -video_size 1280
   "${AUDIO_ARGS[@]}" -c:v libx264 -preset ultrafast -crf 18 -pix_fmt yuv420p -c:a aac -b:a 160k "$RAW" &
 FFMPEG_PID=$!
 
-SEB_DEMO=true ./gradlew runClient --console=plain > run/demo_client.log 2>&1
+SEB_DEMO="${SEB_DEMO:-true}" ./gradlew runClient --console=plain > run/demo_client.log 2>&1
 kill -INT "$FFMPEG_PID" 2>/dev/null; wait "$FFMPEG_PID" 2>/dev/null
 [ -n "${XVFB_PID:-}" ] && kill "$XVFB_PID" 2>/dev/null
 
@@ -63,6 +64,6 @@ END=$(awk '/^end/{print $2}' run/demo_markers.txt | tail -1)
 [ -z "$END" ] && END=$(date +%s%3N)
 SS=$(python3 -c "print(max(0,($START-$REC_START)/1000-0.3))")
 DUR=$(python3 -c "print(($END-$START)/1000+0.8)")
-ffmpeg -hide_banner -loglevel error -y -ss "$SS" -i "$RAW" -t "$DUR" -c:v libx264 -preset slow -crf 22 -pix_fmt yuv420p \
+ffmpeg -hide_banner -loglevel error -y -ss "$SS" -i "$RAW" -t "$DUR" -c:v libx264 -preset slow -crf "${CRF:-22}" -pix_fmt yuv420p \
   -movflags +faststart -c:a aac -b:a 160k "$OUT"
 echo "Wrote $OUT ($(python3 -c "print(round($DUR))")s)"

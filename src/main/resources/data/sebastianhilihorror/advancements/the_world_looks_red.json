@@ -1,0 +1,28 @@
+{
+  "display": {
+    "icon": {
+      "item": "minecraft:crimson_nylium"
+    },
+    "title": {
+      "translate": "advancements.sebastianhilihorror.the_world_looks_red.title"
+    },
+    "description": {
+      "translate": "advancements.sebastianhilihorror.the_world_looks_red.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "criteria": {
+    "code": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "code"
+    ]
+  ],
+  "parent": "sebastianhilihorror:evidence"
+}

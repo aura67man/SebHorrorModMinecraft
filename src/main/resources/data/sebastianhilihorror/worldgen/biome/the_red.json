@@ -1,0 +1,27 @@
+{
+  "has_precipitation": false,
+  "temperature": 2.0,
+  "downfall": 0.0,
+  "effects": {
+    "fog_color": 7211530,
+    "sky_color": 4194304,
+    "water_color": 9048080,
+    "water_fog_color": 3801088,
+    "particle": {
+      "options": {
+        "type": "minecraft:crimson_spore"
+      },
+      "probability": 0.03
+    },
+    "music": {
+      "sound": "sebastianhilihorror:silence",
+      "min_delay": 24000,
+      "max_delay": 24000,
+      "replace_current_music": true
+    }
+  },
+  "spawners": {},
+  "spawn_costs": {},
+  "carvers": {},
+  "features": []
+}

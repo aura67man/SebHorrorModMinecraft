@@ -14,3 +14,6 @@ classes/
 *.mp4
 SebastianHiliHorror.zip
 reference/
+
+# Licensed song: personal use only, never commit it (it is still packed into the jar and zip)
+src/main/resources/assets/sebastianhilihorror/sounds/music/

@@ -55,11 +55,78 @@ public final class SebCommand {
                         .executes(c -> ask(c, c.getSource().getPlayerOrException()))
                         .then(Commands.argument("player", EntityArgument.player())
                                 .executes(c -> ask(c, EntityArgument.getPlayer(c, "player")))))
+                .then(Commands.literal("map")
+                        .executes(c -> giveMap(c, c.getSource().getPlayerOrException()))
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .executes(c -> giveMap(c, EntityArgument.getPlayer(c, "player")))))
+                .then(Commands.literal("refusals")
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .then(Commands.argument("count", com.mojang.brigadier.arguments.IntegerArgumentType.integer(0, 100))
+                                        .executes(c -> {
+                                            ServerPlayer p = EntityArgument.getPlayer(c, "player");
+                                            int n = com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "count");
+                                            com.sebastianhili.horror.boss.BurnedPennyMap.setRefusals(p, n);
+                                            c.getSource().sendSuccess(() -> Component.literal(p.getGameProfile().getName() + " has refused him " + n + " time(s) in a row."), true);
+                                            return 1;
+                                        }))))
+                .then(Commands.literal("gone")
+                        .then(Commands.argument("gone", BoolArgumentType.bool()).executes(c -> {
+                            boolean gone = BoolArgumentType.getBool(c, "gone");
+                            var data = com.sebastianhili.horror.boss.BossData.get(c.getSource().getServer());
+                            data.gone = gone;
+                            data.setDirty();
+                            c.getSource().sendSuccess(() -> Component.literal(gone ? "Sebastian Hili will not arrive on his own any more." : "Sebastian Hili can arrive on his own again."), true);
+                            return 1;
+                        })))
+                .then(Commands.literal("boss")
+                        .then(Commands.literal("start").executes(SebCommand::bossStart))
+                        .then(Commands.literal("stop").executes(c -> {
+                            var f = com.sebastianhili.horror.boss.BossFight.get();
+                            if (f == null) throw NO_FIGHT.create();
+                            f.cancel();
+                            return 1;
+                        }))
+                        .then(Commands.literal("skip")
+                                .then(Commands.argument("seconds", com.mojang.brigadier.arguments.IntegerArgumentType.integer(-4, 399))
+                                        .executes(c -> {
+                                            var f = com.sebastianhili.horror.boss.BossFight.get();
+                                            if (f == null) throw NO_FIGHT.create();
+                                            int sec = com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "seconds");
+                                            f.skipTo(sec * 20);
+                                            c.getSource().sendSuccess(() -> Component.literal("Boss fight -> " + sec + "s (the music keeps its own time)"), true);
+                                            return 1;
+                                        }))))
                 .then(Commands.literal("state")
                         .then(Commands.argument("state", com.mojang.brigadier.arguments.StringArgumentType.word()).suggests(STATES)
                                 .executes(c -> state(c, c.getSource().getPlayer()))
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .executes(c -> state(c, EntityArgument.getPlayer(c, "player")))))));
+    }
+
+    private static final SimpleCommandExceptionType NO_FIGHT =
+            new SimpleCommandExceptionType(Component.literal("No boss fight is running."));
+
+    private static int giveMap(CommandContext<CommandSourceStack> c, ServerPlayer p) {
+        p.getInventory().add(com.sebastianhili.horror.boss.BurnedPennyMap.create(c.getSource().getServer()));
+        c.getSource().sendSuccess(() -> Component.literal("Gave Exhibit A to " + p.getGameProfile().getName()), true);
+        return 1;
+    }
+
+    /** Starts the fight as if you had shown the nearest Sebastian the map (spawns one if needed). */
+    private static int bossStart(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
+        ServerPlayer p = c.getSource().getPlayerOrException();
+        SebastianEntity seb = SebastianEntity.activeIn(p.serverLevel()).stream()
+                .min(Comparator.comparingDouble(s -> s.distanceToSqr(p))).orElse(null);
+        if (seb == null) {
+            seb = ModEntities.SEBASTIAN_HILI.get().create(p.serverLevel());
+            if (seb == null) return 0;
+            seb.moveTo(p.getX(), p.getY(), p.getZ() + 3, 180, 0);
+            p.serverLevel().addFreshEntity(seb);
+        }
+        if (!com.sebastianhili.horror.boss.BossFight.start(seb, p)) {
+            throw new SimpleCommandExceptionType(Component.literal("Couldn't start the fight (one is already running?)")).create();
+        }
+        return 1;
     }
 
     private static SebastianEntity nearest(CommandSourceStack src) throws CommandSyntaxException {

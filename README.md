@@ -18,6 +18,7 @@ Works in single-player and on multiplayer servers. All of his behaviour runs on 
 | `SebastianHiliHorror-1.20.1-1.0.0.jar` | **The mod.** This is the only file you put in your `mods` folder. |
 | `SebastianHili_skin.png` | Sebastian's 64×64 skin (classic/"wide" arms) in case you want to wear it yourself. |
 | `SebastianHiliHorror_demo.mp4` | A video of the mod running. |
+| `SebastianHili_BossFight.mp4` | A video of the whole boss fight. |
 | `README.md` | This file. |
 | `source/` | The full source project (Gradle). You don't need it to play. |
 
@@ -155,6 +156,64 @@ Creative and spectator players are never killed (unless you turn off `spareCreat
 
 ---
 
+## 6½. The boss fight: *The World Looks Red*
+
+**How it starts.** Refuse him a penny **5 times in a row** while he begs: let the timer run out, put the penny away, or run.
+Giving him a penny resets the count, and the count survives death. The first four times he charges you as usual. The
+fifth time he doesn't. He says *"...five. fine. keep it."* and slips **Exhibit A** into your pocket: a map showing a
+burned, melting penny. **Right-click him with it** to show it to him. He takes it, and **everyone online** is pulled
+into **The Red**.
+
+**The Red** is a pocket dimension: a crimson island floating on a lava sea in thick red fog, with crimson spores in the
+air. There are pillars to hide behind, a few small lava pools (not everywhere) and lava pouring off distant rocks.
+
+**The fight** is timed to the song (6:39):
+
+| Song | What happens |
+|---|---|
+| arrival | You're **frozen**, and he stands a little way in front of you. *"you..."* |
+| 0:00 | The song starts. He talks for 42 seconds, ending with *"THE WORLD LOOKS RED. AND YOU WON'T LIVE TO HEAR THIS SONG END."* |
+| **0:42** | The climax hits. A red **"Sebastian Hili ❤ 50,000"** boss bar appears and you can move. **You can't hurt him.** Survive. |
+| 0:42–1:50 | First climax: penny fans, dashes, eruptions, blink strikes |
+| 1:50–2:28 | Bass groove: shockwaves and blink strikes |
+| 2:28–2:50 | Build-up: red lightning, more and more of it |
+| 2:50–3:12 | **The Dark** (the quiet part): darkness, he's invisible except for his red eyes, and a heartbeat tells you how close he is. A little Regeneration so you can breathe. |
+| 3:12–3:32 | The bass returns: double dashes |
+| 3:32–4:58 | Second climax: everything. 4:16–4:38 is the peak, faster and under a lightning storm |
+| 4:58–5:40 | Breather: Regeneration, slow shockwaves, and him talking |
+| 5:40–6:02 | The drop: triple dashes and double shockwaves |
+| 6:02–6:24 | Final climax: penny rain, lightning, dashes, everything |
+| **6:24** | He's tired. He kneels and slowly **fades away** as the song ends. |
+| 6:39 | Everyone still alive goes home: *"YOU SURVIVED. Sebastian Hili is gone. For good."* |
+
+**His attacks:** every one has a warning, so none of them is unavoidable.
+
+| Attack | Warning | How to survive it |
+|---|---|---|
+| Penny fan | he raises his arm, a clink | strafe sideways, or get behind a pillar |
+| Dash | a red line on the ground pointing at you | step off the line |
+| Eruption | a ring of fire under your feet | get out of the ring within a second and a half |
+| Blink strike | a sting sound and "behind you." | keep moving; he slashes where you *were* |
+| Shockwave | he leaps into the air | jump as the red ring reaches you |
+| Red lightning | sparks mark the ground (aimed where you're running) | change direction |
+| Penny rain | pennies falling from above | keep moving |
+| The Dark | heartbeat gets faster as he gets closer | keep away from the red eyes |
+
+Armour, Protection, Fire Resistance and potions all help. If it's too hard or too easy, change `[boss] damageMultiplier`.
+
+**If you die** in The Red you respawn at home **with all your items and XP**. Once nobody is left alive, the fight ends:
+*"...not yet."* He goes back to normal and turns up again, and you'll have to earn a new map (5 more refusals) for
+another try. **If anyone survives to the end, everyone wins**, and he never arrives on his own again. Only the spawn egg
+or `/seb spawn` can bring him back (and `/seb gone false` lets him return naturally). There's no escaping through portals mid-fight.
+
+**Boss debug commands:** `/seb map [player]` (give Exhibit A), `/seb refusals <player> <n>`, `/seb boss start`,
+`/seb boss skip <seconds>` (jumps the fight's timeline; the music can't skip, so it keeps its own time), `/seb boss stop`,
+`/seb gone <true|false>`.
+
+**The song** is used with permission for this personal mod. It is packed into the jar and included in the zip, but
+it is deliberately **not** in the GitHub repository (it's in `.gitignore`). To build from GitHub, put an OGG of it at
+`src/main/resources/assets/sebastianhilihorror/sounds/music/the_world_looks_red.ogg`.
+
 ## 7. My creative additions
 
 Things I added on top of the brief:
@@ -183,6 +242,11 @@ Things I added on top of the brief:
   *Over a Penny* (get run through), *Money to Burn* (burn a penny in front of him), *Good Morning* (the wake-up scare),
   *Debt Collector* (kill him).
 * **Original pixel art** for every texture, plus the skin.
+* **Boss fight extras:** he's 20% bigger and his eyes glow red the whole time; in The Dark only his eyes show. He
+  taunts you if you try to hit him ("that tickles."), he talks between the song's sections, and he says "one down." when
+  someone falls. Each attack has its own death message (e.g. *"forgot to jump"*, *"turned around too late"*,
+  *"was found in the dark"*). He fades away by actually becoming see-through. There are two new advancements:
+  *Exhibit A* and *The World Looks Red*.
 * Zinc counts as **beacon payment**, and gets standard Forge tags so other mods can use it.
 
 ---
@@ -196,6 +260,13 @@ dark trousers and black shoes. To wear it: **minecraft.net → Profile → Skin 
 ---
 
 ## 9. The demo video
+
+**Boss fight video:** `SebastianHili_BossFight.mp4` shows refusing him (one refusal live, then a command skips to the
+fourth), the fifth refusal and Exhibit A, showing him the map, the frozen intro, the whole fight with the song, him
+fading, and the trip home. The demo player has Resistance V so the full fight can be filmed. A scripted player can't
+dodge like a person, and without it the video would end early. Two stand-in "friends" are pulled in too; they can't
+move, so you can see what happens to people who stand still. The video also hides the "on fire" screen overlay
+(the scripted player runs through fire a lot and it covered half the picture); in the real game it shows as normal.
 
 `SebastianHiliHorror_demo.mp4` (2:10, 1280×720, with game sound) was recorded from the real dev client running
 on a headless Linux machine (software rendering). Nothing is edited in. A script plays the scenes using
@@ -223,7 +294,7 @@ Everything is in `source/` (also on GitHub). Needs JDK 17.
 cd source
 ./gradlew build                 # -> build/libs/SebastianHiliHorror-1.20.1-1.0.0.jar
 ./gradlew test                  # JUnit: chat answer parsing, lie detector truth table, burn rules, watch distances
-./gradlew runGameTestServer     # 19 Forge GameTests (see below), exits non-zero on failure
+./gradlew runGameTestServer     # 23 Forge GameTests (see below), exits non-zero on failure
 ./gradlew runClient             # dev client
 ```
 
@@ -233,7 +304,10 @@ Fortune III gives clearly more, Silk Touch gives the ore), storage blocks drop t
 pennies taken, honest "no" → safe and nothing else taken, honest "yes" → exactly one penny taken, pennies hidden in a shulker
 box still count, penny burned in lava → RAGE, penny burned in fire → RAGE, penny burned behind a wall → no rage, penny
 destroyed by cactus → no rage, chest rummaging takes only pennies (diamonds, dirt and zinc untouched), barrel penny removal,
-giving a penny while begging, putting the penny away → charge, kill and one penny taken, spawn stats and nameplate.
+giving a penny while begging, putting the penny away → charge, kill and one penny taken, spawn stats and nameplate,
+the 5th refusal gives Exhibit A (with the picture painted on the map), giving a penny resets the refusal count,
+showing him the map → The Red (arena built, map taken, boss invulnerable) → surviving sends you home and makes him
+gone for good, and dying in The Red keeps your items.
 
 **Project layout**
 

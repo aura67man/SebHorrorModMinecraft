@@ -25,6 +25,8 @@ public final class SebSpawner {
 
     public static void tick(ServerLevel overworld) {
         if (!SebConfig.NATURAL_SPAWNING.get()) return;
+        if (com.sebastianhili.horror.boss.BossFight.isActive()) return;
+        if (com.sebastianhili.horror.boss.BossData.get(overworld.getServer()).gone) return; // survived the boss: he's gone for good
         long time = overworld.getGameTime();
         if (time % 1200 != 600) return; // once a minute
         if (overworld.players().isEmpty()) return;

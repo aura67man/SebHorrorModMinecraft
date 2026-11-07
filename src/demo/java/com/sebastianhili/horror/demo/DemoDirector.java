@@ -117,9 +117,12 @@ public final class DemoDirector {
                 o = p.blockPosition();
                 if ("ores".equals(MODE)) {
                     buildOreScript();
+                } else if ("boss".equals(MODE)) {
+                    buildBossScript();
                 } else {
                     buildScript();
                 }
+                steps.sort(Comparator.comparingInt(Step::tick));
                 marker("start");
             }
             return;
@@ -132,6 +135,7 @@ public final class DemoDirector {
             }
             cursor++;
         }
+        runSongSteps();
         camera(mc);
         t++;
     }
@@ -142,8 +146,17 @@ public final class DemoDirector {
         GuiGraphics g = event.getGuiGraphics();
         Minecraft mc = Minecraft.getInstance();
         int w = mc.font.width(caption);
-        g.fill(6, 6, 6 + w + 10, 6 + 18, 0xB0000000);
-        g.drawString(mc.font, caption, 11, 11, 0xFFE8C26A, false);
+        int y = "boss".equals(MODE) ? 34 : 6; // below the boss bar
+        g.fill(6, y, 6 + w + 10, y + 18, 0xB0000000);
+        g.drawString(mc.font, caption, 11, y + 5, 0xFFE8C26A, false);
+    }
+
+    /** Demo recording only: hide the "on fire" screen overlay, which otherwise covers half the video. */
+    @SubscribeEvent
+    public static void onScreenEffect(net.minecraftforge.client.event.RenderBlockScreenEffectEvent event) {
+        if (ENABLED && event.getOverlayType() == net.minecraftforge.client.event.RenderBlockScreenEffectEvent.OverlayType.FIRE) {
+            event.setCanceled(true);
+        }
     }
 
     // ------------------------------------------------------------------ the script
@@ -315,6 +328,193 @@ public final class DemoDirector {
             finished = true;
             Minecraft.getInstance().stop();
         });
+    }
+
+    // ------------------------------------------------------------------ boss fight video
+
+    private static boolean pilot;
+    private static int strafeDir = 1;
+
+    /** A simple "player" for the fight: circle-strafe around him, stay on the island, hop now and then. */
+    private static void pilot(Minecraft mc, LocalPlayer p) {
+        var o = mc.options;
+        Vec3 center = new Vec3(0.5, 65, 0.5);
+        double r = Math.sqrt((p.getX() - 0.5) * (p.getX() - 0.5) + (p.getZ() - 0.5) * (p.getZ() - 0.5));
+        SebastianEntity s = seb();
+        if (t % 170 == 0) strafeDir = -strafeDir;
+        if (r > 14 || s == null) {
+            face(p, center.add(0, 1.2, 0), 0.3F);
+            KeyMapping.set(o.keyUp.getKey(), true);
+            KeyMapping.set(o.keyDown.getKey(), false);
+            KeyMapping.set(o.keyLeft.getKey(), false);
+            KeyMapping.set(o.keyRight.getKey(), false);
+        } else {
+            face(p, s.getEyePosition().add(0, -0.3, 0), 0.35F);
+            double d = s.distanceTo(p);
+            KeyMapping.set(o.keyUp.getKey(), d > 10);
+            KeyMapping.set(o.keyDown.getKey(), d < 6);
+            KeyMapping.set(o.keyLeft.getKey(), strafeDir > 0);
+            KeyMapping.set(o.keyRight.getKey(), strafeDir < 0);
+        }
+        KeyMapping.set(o.keyJump.getKey(), t % 45 < 2);
+    }
+
+    private static void pilotOff() {
+        step(() -> {
+            pilot = false;
+            var o = Minecraft.getInstance().options;
+            for (KeyMapping k : new KeyMapping[]{o.keyUp, o.keyDown, o.keyLeft, o.keyRight, o.keyJump}) KeyMapping.set(k.getKey(), false);
+        });
+    }
+
+    /** Steps timed against the song by the real clock (started when the map is shown), like the server does. */
+    private static final List<Step> songSteps = new ArrayList<>();
+    private static long shownAtNanos = -1;
+    private static int songCursor;
+
+    private static void atSong(int mapShownAt, double songSeconds, Runnable r) {
+        songSteps.add(new Step(80 + (int) Math.round(songSeconds * 20), r));
+    }
+
+    private static void runSongSteps() {
+        if (shownAtNanos < 0) return;
+        int elapsed = (int) ((System.nanoTime() - shownAtNanos) / 50_000_000L);
+        while (songCursor < songSteps.size() && songSteps.get(songCursor).tick <= elapsed) {
+            try {
+                songSteps.get(songCursor).action.run();
+            } catch (RuntimeException e) {
+                LOG.error("demo song step failed", e);
+            }
+            songCursor++;
+        }
+    }
+
+    private static void buildBossScript() {
+        Minecraft mc = Minecraft.getInstance();
+        at = 0;
+        cmd("gamerule sendCommandFeedback false");
+        cmd("gamerule doDaylightCycle false");
+        cmd("gamerule doWeatherCycle false");
+        cmd("gamerule doMobSpawning false");
+        cmd("gamerule doFireTick false");
+        cmd("gamerule keepInventory true");
+        cmd("gamerule doImmediateRespawn true");
+        cmd("weather clear");
+        cmd("time set 6000");
+        cmd("fill " + xyz(-22, -4, -22) + " " + xyz(22, -2, 22) + " dirt");
+        cmd("fill " + xyz(-22, -1, -22) + " " + xyz(22, -1, 22) + " grass_block");
+        cmd("fill " + xyz(-22, 0, -22) + " " + xyz(22, 14, 22) + " air");
+        cmd("spawnpoint @s " + xyz(0, 0, 0));
+        cmd("gamemode survival");
+        cmd("seb gone false");
+        cmd("seb refusals Dev 0");
+        tpPlayer(0, 0, 0, 0, 0);
+        pause(2);
+        scene("Sebastian Hili Horror  |  boss fight: The World Looks Red");
+        cmd("title @s times 5 50 10");
+        cmd("title @s subtitle {\"text\":\"what happens if you never give him a penny\",\"color\":\"gray\"}");
+        cmd("title @s title {\"text\":\"The World Looks Red\",\"color\":\"dark_red\",\"bold\":true}");
+        pause(4);
+
+        // refusal #1, live
+        scene("Refuse him a penny...");
+        cmd("seb spawn");
+        pause(0.3);
+        cmd("seb freeze true");
+        tpSeb(0, 0, 12);
+        cmd("item replace entity @s hotbar.8 with sebastianhilihorror:penny 3");
+        lookAtSeb();
+        hotbar(8);
+        pause(2.0);
+        hotbar(4); // put it away
+        pause(5.0);
+        // skip ahead
+        scene("...refuse him again, and again, and again (skipped ahead to refusal #4)");
+        cmd("seb refusals Dev 4");
+        tpPlayer(0, 0, 0, 0, 0);
+        tpSeb(0, 0, 12);
+        lookAtSeb();
+        pause(3.5);
+        scene("...and a fifth time");
+        hotbar(8);
+        pause(2.0);
+        hotbar(4);
+        pause(5.0);
+        scene("Exhibit A");
+        step(() -> {
+            var inv = Minecraft.getInstance().player.getInventory();
+            for (int i = 0; i < 9; i++) {
+                if (com.sebastianhili.horror.boss.BurnedPennyMap.isMap(inv.getItem(i))) inv.selected = i;
+            }
+        });
+        step(() -> lookTarget = null);
+        step(() -> {
+            LocalPlayer pl = Minecraft.getInstance().player;
+            pl.setXRot(55);
+        });
+        pause(4.0);
+        // friends join, and the demo player gets protection so the whole fight can be filmed
+        cmd("sebdemo friends " + xyz(-4, 0, -2) + " " + xyz(4, 0, -2));
+        cmd("effect give @s minecraft:resistance infinite 4 true");
+        cmd("effect give @s minecraft:fire_resistance infinite 0 true");
+        tpSeb(0, 0, 5);
+        lookAtSeb();
+        pause(2.0);
+        scene("Show it to him...");
+        pause(1.0);
+        int shown = at;
+        step(() -> {
+            SebastianEntity s = seb();
+            if (s != null) {
+                mc.gameMode.interact(mc.player, s, InteractionHand.MAIN_HAND);
+                mc.player.swing(InteractionHand.MAIN_HAND);
+                shownAtNanos = System.nanoTime();
+            }
+        });
+        // the fight, captioned with the song's sections
+        atSong(shown, -3.9, () -> {
+            caption = "The Red  (you're frozen. listen.)";
+            lookTarget = () -> {
+                SebastianEntity s = seb();
+                return s == null ? null : s.getEyePosition();
+            };
+        });
+        atSong(shown, 30, () -> caption = "The Red  |  0:30  (demo player has Resistance V so the whole fight can be filmed)");
+        atSong(shown, 42, () -> {
+            caption = "0:42  SURVIVE  |  first climax: penny fans, dashes, eruptions, blink strikes";
+            lookTarget = null;
+            pilot = true;
+        });
+        atSong(shown, 110, () -> caption = "1:50  the groove: shockwaves (jump!), blink strikes");
+        atSong(shown, 148, () -> caption = "2:28  the build: red lightning, more and more of it");
+        atSong(shown, 170, () -> caption = "2:50  THE DARK: only his eyes, and your heartbeat");
+        atSong(shown, 192, () -> caption = "3:12  back with the bass: double dashes");
+        atSong(shown, 212, () -> caption = "3:32  the second climax: everything");
+        atSong(shown, 256, () -> caption = "4:16  the peak: everything, faster, under a lightning storm");
+        atSong(shown, 298, () -> caption = "4:58  the breather");
+        atSong(shown, 340, () -> caption = "5:40  the drop: triple dashes and double shockwaves");
+        atSong(shown, 362, () -> caption = "6:02  the final climax: penny rain, lightning, everything");
+        atSong(shown, 384, () -> {
+            caption = "6:24  he's tired...";
+            pilot = false;
+            var o = Minecraft.getInstance().options;
+            for (KeyMapping k : new KeyMapping[]{o.keyUp, o.keyDown, o.keyLeft, o.keyRight, o.keyJump}) KeyMapping.set(k.getKey(), false);
+            lookTarget = () -> {
+                SebastianEntity s = seb();
+                return s == null ? null : s.getEyePosition();
+            };
+        });
+        atSong(shown, 400.5, () -> {
+            caption = "Home. He's gone for good.";
+            lookTarget = null;
+        });
+        atSong(shown, 407, () -> Minecraft.getInstance().player.connection.sendCommand("sebdemo nofriends"));
+        atSong(shown, 408, () -> {
+            marker("end");
+            finished = true;
+            Minecraft.getInstance().stop();
+        });
+        songSteps.sort(Comparator.comparingInt(Step::tick));
     }
 
     private static void buildScript() {
@@ -571,6 +771,10 @@ public final class DemoDirector {
 
     private static void camera(Minecraft mc) {
         LocalPlayer p = mc.player;
+        if (pilot) {
+            pilot(mc, p);
+            return;
+        }
         if (orbit != null) {
             double angle = Math.toRadians(orbit.startAngle + (t - orbit.startTick) * orbit.degPerTick);
             double x = orbit.center.x + Math.cos(angle) * orbit.radius;

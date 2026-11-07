@@ -1,0 +1,13 @@
+{
+  "type": "sebastianhilihorror:the_red",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "sebastianhilihorror:the_red",
+      "layers": [],
+      "lakes": false,
+      "features": false,
+      "structure_overrides": []
+    }
+  }
+}

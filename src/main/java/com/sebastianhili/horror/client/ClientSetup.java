@@ -12,6 +12,7 @@ public final class ClientSetup {
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.SEBASTIAN_HILI.get(), SebastianRenderer::new);
+        event.registerEntityRenderer(ModEntities.THROWN_PENNY.get(), net.minecraft.client.renderer.entity.ThrownItemRenderer::new);
     }
 
     private ClientSetup() {

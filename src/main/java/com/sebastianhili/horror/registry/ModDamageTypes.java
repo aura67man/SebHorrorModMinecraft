@@ -14,6 +14,13 @@ public final class ModDamageTypes {
     public static final ResourceKey<DamageType> PENNY_CHARGE = key("penny_charge");
     public static final ResourceKey<DamageType> PENNY_RAGE = key("penny_rage");
     public static final ResourceKey<DamageType> PENNY_LIE = key("penny_lie");
+    public static final ResourceKey<DamageType> BOSS_DASH = key("boss_dash");
+    public static final ResourceKey<DamageType> BOSS_PENNY = key("boss_penny");
+    public static final ResourceKey<DamageType> BOSS_ERUPTION = key("boss_eruption");
+    public static final ResourceKey<DamageType> BOSS_SLASH = key("boss_slash");
+    public static final ResourceKey<DamageType> BOSS_WAVE = key("boss_wave");
+    public static final ResourceKey<DamageType> BOSS_LIGHTNING = key("boss_lightning");
+    public static final ResourceKey<DamageType> BOSS_STALK = key("boss_stalk");
 
     private static ResourceKey<DamageType> key(String name) {
         return ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(SebHorrorMod.MODID, name));

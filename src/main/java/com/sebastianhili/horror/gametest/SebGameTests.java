@@ -423,6 +423,85 @@ public class SebGameTests {
         });
     }
 
+    // ---------------------------------------------------------------- the boss fight
+
+    @GameTest(template = EMPTY, batch = "boss_map", timeoutTicks = 60)
+    public static void fifthRefusalGivesExhibitA(GameTestHelper h) {
+        SebastianEntity seb = spawnSeb(h, 2, 2);
+        ServerPlayer p = survivalPlayer(h, 4, 2);
+        com.sebastianhili.horror.boss.BurnedPennyMap.resetRefusals(p);
+        for (int i = 1; i <= 4; i++) {
+            if (com.sebastianhili.horror.boss.BurnedPennyMap.onRefusal(seb, p)) h.fail("map given too early, at refusal " + i);
+        }
+        if (com.sebastianhili.horror.boss.BurnedPennyMap.getRefusals(p) != 4) h.fail("should count 4 refusals");
+        if (!com.sebastianhili.horror.boss.BurnedPennyMap.onRefusal(seb, p)) h.fail("the 5th refusal should give the map");
+        ItemStack map = ItemStack.EMPTY;
+        for (int i = 0; i < p.getInventory().getContainerSize(); i++) {
+            if (com.sebastianhili.horror.boss.BurnedPennyMap.isMap(p.getInventory().getItem(i))) map = p.getInventory().getItem(i);
+        }
+        if (map.isEmpty()) h.fail("Exhibit A is not in the player's inventory");
+        if (com.sebastianhili.horror.boss.BurnedPennyMap.getRefusals(p) != 0) h.fail("the count should reset after the map");
+        Integer id = net.minecraft.world.item.MapItem.getMapId(map);
+        var data = id == null ? null : h.getLevel().getServer().overworld().getMapData(net.minecraft.world.item.MapItem.makeKey(id));
+        if (data == null) h.fail("map has no picture data");
+        int painted = 0;
+        for (byte b : data.colors) if (b != 0) painted++;
+        if (painted < 128 * 128 / 2) h.fail("the burned penny picture was not painted onto the map (" + painted + " pixels)");
+        h.succeed();
+    }
+
+    @GameTest(template = EMPTY, batch = "boss_reset", timeoutTicks = 60)
+    public static void givingAPennyResetsTheRefusalStreak(GameTestHelper h) {
+        SebastianEntity seb = spawnSeb(h, 2, 2);
+        ServerPlayer p = survivalPlayer(h, 4, 2);
+        com.sebastianhili.horror.boss.BurnedPennyMap.setRefusals(p, 3);
+        seb.acceptPenny(p, new ItemStack(ModItems.PENNY.get(), 1));
+        if (com.sebastianhili.horror.boss.BurnedPennyMap.getRefusals(p) != 0) h.fail("a gift should reset the streak");
+        h.succeed();
+    }
+
+    @GameTest(template = EMPTY, batch = "boss_fight", timeoutTicks = 600)
+    public static void showingTheMapStartsTheFightAndSurvivingSendsYouHome(GameTestHelper h) {
+        var bossData = com.sebastianhili.horror.boss.BossData.get(h.getLevel().getServer());
+        bossData.gone = false;
+        SebastianEntity seb = spawnSeb(h, 2, 2);
+        ServerPlayer p = survivalPlayer(h, 4, 2);
+        Vec3 home = p.position();
+        p.setItemInHand(InteractionHand.MAIN_HAND, com.sebastianhili.horror.boss.BurnedPennyMap.create(h.getLevel().getServer()));
+        p.interactOn(seb, InteractionHand.MAIN_HAND);
+        var fight = com.sebastianhili.horror.boss.BossFight.get();
+        if (fight == null) h.fail("showing him the map should start the fight");
+        if (p.level().dimension() != com.sebastianhili.horror.boss.BossFight.THE_RED) h.fail("the player should be in The Red");
+        if (!p.getMainHandItem().isEmpty()) h.fail("he should take the map");
+        if (!seb.isRemoved()) h.fail("the overworld Sebastian should go with you");
+        if (p.level().getBlockState(p.blockPosition().below()).isAir()) h.fail("no arena floor under the player");
+        if (!fight.boss().isBoss() || !fight.boss().isInvulnerable()) h.fail("the boss should be invulnerable");
+        fight.skipTo(com.sebastianhili.horror.boss.BossFight.T_END - 3);
+        h.succeedWhen(() -> {
+            if (com.sebastianhili.horror.boss.BossFight.isActive()) h.fail("fight still running");
+            if (p.level() != h.getLevel() || p.position().distanceTo(home) > 1.0) h.fail("not sent home");
+            if (!bossData.gone) h.fail("surviving should make him gone for good");
+            bossData.gone = false; // leave the world as we found it
+        });
+    }
+
+    @GameTest(template = EMPTY, batch = "boss_death", timeoutTicks = 200)
+    public static void dyingInTheRedKeepsYourItems(GameTestHelper h) {
+        SebastianEntity seb = spawnSeb(h, 2, 2);
+        ServerPlayer p = survivalPlayer(h, 4, 2);
+        p.getInventory().add(new ItemStack(Items.DIAMOND, 5));
+        if (!com.sebastianhili.horror.boss.BossFight.start(seb, p)) h.fail("fight did not start");
+        ServerLevel red = p.serverLevel();
+        p.kill();
+        if (!red.getEntitiesOfClass(ItemEntity.class, new AABB(p.blockPosition()).inflate(5)).isEmpty()) h.fail("items were dropped in The Red");
+        ServerPlayer back = h.getLevel().getServer().getPlayerList().respawn(p, false);
+        if (back.getInventory().countItem(Items.DIAMOND) != 5) h.fail("the diamonds should come back on respawn");
+        if (back.level().dimension() == com.sebastianhili.horror.boss.BossFight.THE_RED) h.fail("respawn should be outside The Red");
+        h.succeedWhen(() -> {
+            if (com.sebastianhili.horror.boss.BossFight.isActive()) h.fail("with nobody left the fight should end");
+        });
+    }
+
     @GameTest(template = EMPTY, batch = "seb_spawn", timeoutTicks = 60)
     public static void sebastianSpawnsWithConfiguredStats(GameTestHelper h) {
         SebastianEntity seb = spawnSeb(h, 5, 5);

@@ -28,5 +28,17 @@
     "sounds": [
       "sebastianhilihorror:sting"
     ]
+  },
+  "boss_music": {
+    "subtitle": "subtitles.sebastianhilihorror.boss_music",
+    "sounds": [
+      {
+        "name": "sebastianhilihorror:music/the_world_looks_red",
+        "stream": true
+      }
+    ]
+  },
+  "silence": {
+    "sounds": []
   }
 }
