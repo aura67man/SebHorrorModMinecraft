@@ -46,9 +46,9 @@ minecraft {
         client {
             property 'forge.enabledGameTestNamespaces', mod_id
             // SEB_DEMO=true ./gradlew runClient  -> plays the scripted demo used for the video
-            property 'sebhorror.demo', System.getenv('SEB_DEMO') ?: 'false'
+            property 'sebhorror.demo', System.getenv('SEB_DEMO') ?: 'false' // 'true' = video demo, 'ores' = ore screenshots
             args '--width', '1280', '--height', '720'
-            if (System.getenv('SEB_DEMO') == 'true') {
+            if (System.getenv('SEB_DEMO')) {
                 args '--username', 'Dev'
             }
             mods {

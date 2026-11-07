@@ -89,6 +89,10 @@ and friends on the same network join from **Multiplayer**. The host's computer r
 | **Penny** | Shapeless: **3 Zinc Ingots + 1 Copper Ingot = 4 Pennies.** (Real pennies are 97.5% zinc with a copper coat.) |
 | **Sebastian Hili Spawn Egg** | Creative inventory, *Sebastian Hili Horror* tab. |
 
+The ore blocks draw Minecraft's own stone and deepslate underneath, with the zinc nuggets
+(styled after vanilla iron ore) layered on top. That way they blend into the world, even with a resource pack.
+Screenshots: `docs/screenshots/` in the source folder.
+
 Zinc also works with other mods (`forge:ingots/zinc`, `forge:ores/zinc` and so on) and as **beacon payment**.
 
 ---
@@ -242,6 +246,7 @@ giving a penny while begging, putting the penny away → charge, kill and one pe
 * `tools/generate_textures.py`, `tools/generate_data.py`, `tools/generate_sounds.sh`: regenerate all art, JSON data and sounds
 * `src/demo/`: the scripted demo director used to record the video (dev client only, **not** in the jar)
 * `tools/record_demo.sh`: records the demo (Xvfb + ffmpeg x11grab + PulseAudio)
+* `tools/screenshot_ores.sh`: takes the in-game ore screenshots in `docs/screenshots/` (`SEB_DEMO=ores`)
 
 ### Recording the demo yourself
 

@@ -231,30 +231,56 @@ def stone_base(rng, deep=False):
 
 ZINC = [hexc("#dfe7ea"), hexc("#b8c6cc"), hexc("#8fa1a9"), hexc("#5f6f78")]  # light -> dark
 
+# Ore textures are OVERLAYS: transparent except for the zinc nuggets. The block model draws
+# vanilla stone/deepslate underneath (models/block/zinc_ore.json), so the ore always matches the
+# world, including resource packs. Nugget style follows vanilla iron ore: clusters with a light
+# top-right, mid body, darker right/bottom edge and a dark rim on the left/bottom.
+ORE_STONE = [
+    "..dd.........dc.",
+    ".dbad......ddbc.",
+    "..dbbc....dabbd.",
+    "...dcc.....dcd..",
+    "......d.........",
+    "....ddbad.......",
+    "...dbaabbcd..d..",
+    "....dcbbcd..dbd.",
+    ".d....dd...dabc.",
+    "dbad........dcd.",
+    "dabcd.....dd....",
+    ".dcc....ddbad...",
+    "..d....dbaabcd..",
+    "........dcbcc...",
+    "...dbd...ddd....",
+    "...dad..........",
+]
+ORE_DEEPSLATE = [
+    "................",
+    "...ddbd....d....",
+    "..dbaabd..dbd...",
+    "...dcbcc.dbacd..",
+    ".....dd...dccd..",
+    ".............d..",
+    ".dd.............",
+    "dbad.....ddbd...",
+    "dabcd...dbaabd..",
+    ".dcc.....dcbcc..",
+    "..d.......ddd...",
+    "............ddbd",
+    "....ddbd...dbaab",
+    "...dbaacd...dcbc",
+    "....dcbcc....dd.",
+    ".....dd.........",
+]
+
 
 def ore(deep):
     rng = random.Random(42 if not deep else 43)
-    img = stone_base(rng, deep)
-    blobs = [
-        ["..ab", ".abc", "abcd", ".cd."],
-        [".ab.", "abbc", ".ccd"],
-        ["ab", "bc", "cd"],
-        [".a.", "abc", ".cd"],
-    ]
-    spots = [(2, 2), (9, 1), (3, 9), (10, 8), (7, 12) if not deep else (12, 13)]
-    for i, (sx, sy) in enumerate(spots):
-        b = blobs[i % len(blobs)]
-        for dy, row in enumerate(b):
-            for dx, ch in enumerate(row):
-                if ch == ".":
-                    continue
-                x, y = sx + dx, sy + dy
-                if 0 <= x < 16 and 0 <= y < 16:
-                    img.putpixel((x, y), jitter(rng, ZINC["abcd".index(ch)], 0.03))
-        # dark speck rim on lower right
-        ex, ey = sx + len(b[0]), sy + len(b) - 1
-        if ex < 16 and ey < 16:
-            img.putpixel((ex, ey), shade(img.getpixel((ex, ey)), 0.7))
+    if deep:  # deepslate ores are darker and less saturated, like vanilla
+        pal = {"a": hexc("#c6d1d8"), "b": hexc("#9eacb5"), "c": hexc("#707d86"), "d": hexc("#464c54")}
+    else:
+        pal = {"a": hexc("#d0dae0"), "b": hexc("#b0bdc4"), "c": hexc("#8c9aa3"), "d": hexc("#68727a")}
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    paint_grid(img, 0, 0, ORE_DEEPSLATE if deep else ORE_STONE, pal, rng, 0.03)
     return img
 
 
@@ -389,8 +415,8 @@ def main():
     os.makedirs(os.path.join(ROOT, "tools/preview"), exist_ok=True)
     skin_preview(skin).save(os.path.join(ROOT, "tools/preview/skin_preview.png"))
 
-    save(ore(False), "block/zinc_ore.png")
-    save(ore(True), "block/deepslate_zinc_ore.png")
+    save(ore(False), "block/zinc_ore_overlay.png")
+    save(ore(True), "block/deepslate_zinc_ore_overlay.png")
     save(raw_zinc_block(), "block/raw_zinc_block.png")
     save(zinc_block(), "block/zinc_block.png")
     save(item_from_grid(RAW_ZINC, ITEM_PAL, 3), "item/raw_zinc.png")
@@ -398,7 +424,7 @@ def main():
     save(penny(), "item/penny.png")
 
     # contact sheet of all 16x16 art for review
-    names = ["block/zinc_ore", "block/deepslate_zinc_ore", "block/raw_zinc_block", "block/zinc_block",
+    names = ["block/zinc_ore_overlay", "block/deepslate_zinc_ore_overlay", "block/raw_zinc_block", "block/zinc_block",
              "item/raw_zinc", "item/zinc_ingot", "item/penny"]
     sheet = Image.new("RGBA", (16 * len(names) + 2 * (len(names) + 1), 20), (60, 60, 70, 255))
     for i, n in enumerate(names):

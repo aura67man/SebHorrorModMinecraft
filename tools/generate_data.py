@@ -26,10 +26,27 @@ BLOCKS = ["zinc_ore", "deepslate_zinc_ore", "raw_zinc_block", "zinc_block"]
 ITEMS = ["raw_zinc", "zinc_ingot", "penny"]
 
 # ------------------------------------------------------------ models / blockstates
+ORE_BASES = {"zinc_ore": "minecraft:block/stone", "deepslate_zinc_ore": "minecraft:block/deepslate"}
+
+
+def ore_model(base, overlay):
+    """Vanilla stone/deepslate underneath + our transparent zinc overlay on top (cutout).
+    Matches the world exactly, including resource packs."""
+    def faces(tex):
+        return {d: {"texture": tex, "cullface": d} for d in ["down", "up", "north", "south", "west", "east"]}
+    return {"parent": "minecraft:block/block", "render_type": "minecraft:cutout",
+            "textures": {"particle": base, "base": base, "overlay": overlay},
+            "elements": [{"from": [0, 0, 0], "to": [16, 16, 16], "faces": faces("#base")},
+                         {"from": [0, 0, 0], "to": [16, 16, 16], "faces": faces("#overlay")}]}
+
+
 for b in BLOCKS:
     w(f"assets/{M}/blockstates/{b}.json", {"variants": {"": {"model": f"{M}:block/{b}"}}})
-    w(f"assets/{M}/models/block/{b}.json", {"parent": "minecraft:block/cube_all",
-                                             "textures": {"all": f"{M}:block/{b}"}})
+    if b in ORE_BASES:
+        w(f"assets/{M}/models/block/{b}.json", ore_model(ORE_BASES[b], f"{M}:block/{b}_overlay"))
+    else:
+        w(f"assets/{M}/models/block/{b}.json", {"parent": "minecraft:block/cube_all",
+                                                 "textures": {"all": f"{M}:block/{b}"}})
     w(f"assets/{M}/models/item/{b}.json", {"parent": f"{M}:block/{b}"})
 for i in ITEMS:
     w(f"assets/{M}/models/item/{i}.json", {"parent": "minecraft:item/generated",

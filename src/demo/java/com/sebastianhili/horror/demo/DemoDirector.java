@@ -51,7 +51,9 @@ import java.util.function.Supplier;
 @Mod.EventBusSubscriber(modid = SebHorrorMod.MODID, value = Dist.CLIENT)
 public final class DemoDirector {
     private static final Logger LOG = LoggerFactory.getLogger("SebDemo");
-    private static final boolean ENABLED = Boolean.getBoolean("sebhorror.demo");
+    /** "true" = the video demo, "ores" = the zinc ore screenshot showcase. */
+    private static final String MODE = System.getProperty("sebhorror.demo", "false");
+    private static final boolean ENABLED = !"false".equals(MODE);
     private static final String WORLD = "SebDemo";
 
     private static boolean worldRequested;
@@ -113,7 +115,11 @@ public final class DemoDirector {
             readyTicks++;
             if (readyTicks == 100) {
                 o = p.blockPosition();
-                buildScript();
+                if ("ores".equals(MODE)) {
+                    buildOreScript();
+                } else {
+                    buildScript();
+                }
                 marker("start");
             }
             return;
@@ -225,6 +231,90 @@ public final class DemoDirector {
 
     private static void holdKey(KeyMapping key, boolean down) {
         step(() -> KeyMapping.set(key.getKey(), down));
+    }
+
+    private static void shot(String name) {
+        step(() -> {
+            Minecraft mc = Minecraft.getInstance();
+            net.minecraft.client.Screenshot.grab(mc.gameDirectory, name + ".png", mc.getMainRenderTarget(),
+                    msg -> LOG.info("screenshot {}", name));
+        });
+    }
+
+    private static final int[][] ZINC_VEIN = {{-5, 1}, {-4, 1}, {-4, 2}, {-3, 2}, {-4, 3}, {0, 4}, {1, 4}, {1, 5}};
+    private static final int[][] IRON_VEIN = {{2, 2}, {3, 2}, {3, 3}, {2, 3}, {4, 3}};
+    private static final int[][] COPPER_VEIN = {{-1, 1}, {0, 1}};
+
+    private static void wall(String base, String zinc, String iron, String copper, int fromY, int toY) {
+        cmd("fill " + xyz(-8, fromY, 6) + " " + xyz(8, toY, 8) + " " + base);
+        for (int[][] vein : new int[][][]{ZINC_VEIN, IRON_VEIN, COPPER_VEIN}) {
+            String ore = vein == ZINC_VEIN ? zinc : vein == IRON_VEIN ? iron : copper;
+            for (int[] v : vein) {
+                if (v[1] >= fromY && v[1] <= toY) cmd("setblock " + xyz(v[0], v[1], 6) + " " + ore);
+            }
+        }
+    }
+
+    /** Screenshots of zinc ore in stone and deepslate next to vanilla iron and copper ore. */
+    private static void buildOreScript() {
+        at = 0;
+        cmd("gamerule sendCommandFeedback false");
+        cmd("gamerule doDaylightCycle false");
+        cmd("gamerule doMobSpawning false");
+        cmd("weather clear");
+        cmd("time set 6000");
+        cmd("fill " + xyz(-22, -4, -22) + " " + xyz(22, -2, 22) + " dirt");
+        cmd("fill " + xyz(-22, -1, -22) + " " + xyz(22, -1, 22) + " grass_block");
+        cmd("fill " + xyz(-22, 0, -22) + " " + xyz(22, 14, 22) + " air");
+        hideGui(true);
+        step(() -> Minecraft.getInstance().player.getAbilities().flying = true);
+
+        String[] stone = {"stone", "sebastianhilihorror:zinc_ore", "iron_ore", "copper_ore"};
+        String[] deep = {"deepslate", "sebastianhilihorror:deepslate_zinc_ore", "deepslate_iron_ore", "deepslate_copper_ore"};
+        for (String[] set : new String[][]{stone, deep}) {
+            String tag = set == stone ? "stone" : "deepslate";
+            wall(set[0], set[1], set[2], set[3], 0, 6);
+            tpPlayer(0, 1, -2, 0, 8);
+            pause(4);
+            shot("1_" + tag + "_wall");
+            pause(1);
+            tpPlayer(-2, 1, 3, 15, 5);
+            pause(3);
+            shot("2_" + tag + "_closeup");
+            pause(1);
+            tpPlayer(-9, 2, 1, -40, 12);
+            pause(3);
+            shot("3_" + tag + "_angle");
+            pause(1);
+        }
+        // the real-world transition: deepslate below, stone above
+        wall("deepslate", "sebastianhilihorror:deepslate_zinc_ore", "deepslate_iron_ore", "deepslate_copper_ore", 0, 2);
+        wall("stone", "sebastianhilihorror:zinc_ore", "iron_ore", "copper_ore", 3, 6);
+        tpPlayer(0, 1, -2, 0, 8);
+        pause(4);
+        shot("4_stone_and_deepslate");
+        pause(1);
+        // what they look like as items
+        hideGui(false);
+        cmd("gamemode survival");
+        cmd("item replace entity @s hotbar.0 with sebastianhilihorror:zinc_ore 64");
+        cmd("item replace entity @s hotbar.1 with sebastianhilihorror:deepslate_zinc_ore 64");
+        cmd("item replace entity @s hotbar.2 with minecraft:iron_ore 64");
+        cmd("item replace entity @s hotbar.3 with minecraft:deepslate_iron_ore 64");
+        cmd("item replace entity @s hotbar.4 with minecraft:stone 64");
+        cmd("item replace entity @s hotbar.5 with minecraft:deepslate 64");
+        cmd("item replace entity @s hotbar.6 with sebastianhilihorror:raw_zinc 64");
+        cmd("item replace entity @s hotbar.7 with sebastianhilihorror:zinc_ingot 64");
+        hotbar(0);
+        tpPlayer(-2, 0, 3, 15, 5);
+        pause(3);
+        shot("5_items");
+        pause(1);
+        step(() -> {
+            marker("end");
+            finished = true;
+            Minecraft.getInstance().stop();
+        });
     }
 
     private static void buildScript() {
