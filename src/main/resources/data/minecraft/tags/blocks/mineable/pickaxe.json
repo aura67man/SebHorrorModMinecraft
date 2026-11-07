@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "sebastianhilihorror:zinc_ore",
+    "sebastianhilihorror:deepslate_zinc_ore",
+    "sebastianhilihorror:raw_zinc_block",
+    "sebastianhilihorror:zinc_block"
+  ]
+}

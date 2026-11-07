@@ -1,0 +1,37 @@
+{
+  "display": {
+    "icon": {
+      "item": "sebastianhilihorror:zinc_ore"
+    },
+    "title": {
+      "translate": "advancements.sebastianhilihorror.root.title"
+    },
+    "description": {
+      "translate": "advancements.sebastianhilihorror.root.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false,
+    "background": "sebastianhilihorror:textures/block/zinc_block.png"
+  },
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sebastianhilihorror:raw_zinc"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

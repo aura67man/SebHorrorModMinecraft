@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "sebastianhilihorror:zinc_ingot"
+    }
+  },
+  "result": {
+    "item": "sebastianhilihorror:zinc_block"
+  }
+}

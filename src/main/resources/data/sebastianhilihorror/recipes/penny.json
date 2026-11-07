@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "sebastianhilihorror:zinc_ingot"
+    },
+    {
+      "item": "sebastianhilihorror:zinc_ingot"
+    },
+    {
+      "item": "sebastianhilihorror:zinc_ingot"
+    },
+    {
+      "item": "minecraft:copper_ingot"
+    }
+  ],
+  "result": {
+    "item": "sebastianhilihorror:penny",
+    "count": 4
+  }
+}

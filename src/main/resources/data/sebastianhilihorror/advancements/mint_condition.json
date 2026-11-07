@@ -1,0 +1,37 @@
+{
+  "display": {
+    "icon": {
+      "item": "sebastianhilihorror:penny"
+    },
+    "title": {
+      "translate": "advancements.sebastianhilihorror.mint_condition.title"
+    },
+    "description": {
+      "translate": "advancements.sebastianhilihorror.mint_condition.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sebastianhilihorror:penny"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sebastianhilihorror:root"
+}

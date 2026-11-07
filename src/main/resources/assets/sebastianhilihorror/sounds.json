@@ -1,0 +1,32 @@
+{
+  "heartbeat": {
+    "subtitle": "subtitles.sebastianhilihorror.heartbeat",
+    "sounds": [
+      "sebastianhilihorror:heartbeat"
+    ]
+  },
+  "whisper": {
+    "subtitle": "subtitles.sebastianhilihorror.whisper",
+    "sounds": [
+      "sebastianhilihorror:whisper"
+    ]
+  },
+  "rage_scream": {
+    "subtitle": "subtitles.sebastianhilihorror.rage_scream",
+    "sounds": [
+      "sebastianhilihorror:rage_scream"
+    ]
+  },
+  "penny_clink": {
+    "subtitle": "subtitles.sebastianhilihorror.penny_clink",
+    "sounds": [
+      "sebastianhilihorror:penny_clink"
+    ]
+  },
+  "sting": {
+    "subtitle": "subtitles.sebastianhilihorror.sting",
+    "sounds": [
+      "sebastianhilihorror:sting"
+    ]
+  }
+}

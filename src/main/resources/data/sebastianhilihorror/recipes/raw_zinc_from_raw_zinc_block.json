@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "sebastianhilihorror:raw_zinc_block"
+    }
+  ],
+  "result": {
+    "item": "sebastianhilihorror:raw_zinc",
+    "count": 9
+  }
+}
