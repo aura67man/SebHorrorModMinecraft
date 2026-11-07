@@ -45,6 +45,12 @@ minecraft {
 
         client {
             property 'forge.enabledGameTestNamespaces', mod_id
+            // SEB_DEMO=true ./gradlew runClient  -> plays the scripted demo used for the video
+            property 'sebhorror.demo', System.getenv('SEB_DEMO') ?: 'false'
+            args '--width', '1280', '--height', '720'
+            if (System.getenv('SEB_DEMO') == 'true') {
+                args '--username', 'Dev'
+            }
             mods {
                 "${mod_id}" {
                     source sourceSets.main

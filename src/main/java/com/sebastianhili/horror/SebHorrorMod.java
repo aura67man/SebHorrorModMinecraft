@@ -18,7 +18,9 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 public class SebHorrorMod {
     public static final String MODID = "sebastianhilihorror";
 
-    public SebHorrorMod(FMLJavaModLoadingContext context) {
+    @SuppressWarnings("removal") // the non-deprecated constructor injection needs a newer 47.x; this works on all of 47.x
+    public SebHorrorMod() {
+        FMLJavaModLoadingContext context = FMLJavaModLoadingContext.get();
         IEventBus modBus = context.getModEventBus();
         ModBlocks.BLOCKS.register(modBus);
         ModItems.ITEMS.register(modBus);

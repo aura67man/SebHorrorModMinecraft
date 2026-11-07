@@ -27,8 +27,19 @@ public final class ForgeEvents {
         ChatAnswer answer = ChatAnswer.parse(event.getRawText());
         if (answer == ChatAnswer.NOT_AN_ANSWER) return;
         ServerPlayer player = event.getPlayer();
-        // run on the server thread, after the chat line has been broadcast
-        player.server.execute(() -> player.server.execute(() -> SebastianEntity.handleChatAnswer(player, answer)));
+        // Handle it on the next server tick, so his reply always appears after the player's message.
+        NEXT_TICK.add(() -> SebastianEntity.handleChatAnswer(player, answer));
+    }
+
+    private static final java.util.Queue<Runnable> NEXT_TICK = new java.util.concurrent.ConcurrentLinkedQueue<>();
+
+    @SubscribeEvent
+    public static void onServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
+        Runnable r;
+        while ((r = NEXT_TICK.poll()) != null) {
+            r.run();
+        }
     }
 
     @SubscribeEvent
@@ -49,6 +60,11 @@ public final class ForgeEvents {
                 }
             });
         }
+    }
+
+    @SubscribeEvent
+    public static void onServerStopped(net.minecraftforge.event.server.ServerStoppedEvent event) {
+        SebastianEntity.clearActive();
     }
 
     private ForgeEvents() {

@@ -86,7 +86,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.WeakHashMap;
+import java.util.IdentityHashMap;
 
 /**
  * Sebastian Hili. All behaviour runs on the server inside {@link #customServerAiStep()}, which
@@ -96,8 +96,13 @@ public class SebastianEntity extends PathfinderMob {
     private static final EntityDataAccessor<Integer> DATA_STATE =
             SynchedEntityData.defineId(SebastianEntity.class, EntityDataSerializers.INT);
 
-    /** Every Sebastian currently loaded on the server (used for chat answers and burning pennies). */
-    private static final Set<SebastianEntity> ACTIVE = Collections.newSetFromMap(new WeakHashMap<>());
+    /**
+     * Every Sebastian currently loaded on the server (used for chat answers and burning pennies).
+     * Identity-based on purpose: Entity#equals compares entity ids, and in single-player the client
+     * copy has the same id as the server copy, so a normal set would let the client's unload remove
+     * the server entity.
+     */
+    private static final Set<SebastianEntity> ACTIVE = Collections.newSetFromMap(new IdentityHashMap<>());
 
     // ---- persistent
     private int pennies;
@@ -301,8 +306,17 @@ public class SebastianEntity extends PathfinderMob {
     @Override
     public void onRemovedFromWorld() {
         super.onRemovedFromWorld();
+        if (!level().isClientSide) {
+            synchronized (ACTIVE) {
+                ACTIVE.remove(this);
+            }
+        }
+    }
+
+    /** Called when the server stops, so nothing from an old world lingers in single-player. */
+    public static void clearActive() {
         synchronized (ACTIVE) {
-            ACTIVE.remove(this);
+            ACTIVE.clear();
         }
     }
 
@@ -839,7 +853,7 @@ public class SebastianEntity extends PathfinderMob {
             p.connection.send(new ClientboundSetTitleTextPacket(Component.literal("HE SAW THAT").withStyle(ChatFormatting.DARK_RED, ChatFormatting.BOLD)));
             p.connection.send(new ClientboundSetSubtitleTextPacket(Component.literal("someone burned a penny").withStyle(ChatFormatting.RED)));
             if (isTouchable(p)) {
-                p.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 120, 0, false, false));
+                p.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 60, 0, false, false));
             }
         }
         if (SebConfig.RAGE_THUNDER.get()) {
@@ -880,7 +894,7 @@ public class SebastianEntity extends PathfinderMob {
         if (chase(victim)) {
             rageKilled.add(victim.getUUID());
             impale(victim, ModDamageTypes.PENNY_RAGE);
-            SebChat.say(this, SebLines.pick(random, SebLines.RAGE_KILL));
+            SebChat.say(this, SebLines.RAGE_KILL[(rageKilled.size() - 1) % SebLines.RAGE_KILL.length]);
             targetId = null;
             ragePause = 20;
         }
