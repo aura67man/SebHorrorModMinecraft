@@ -17,7 +17,9 @@ public final class RedArena {
     public static final int PLATFORM_RADIUS = 24;
     private static final int CLEAR_RADIUS = 34;
     private static final int SEA_RADIUS = 52;
-    private static final int FLAGS = 2; // update clients, no neighbour updates
+    // update clients (2), skip shape updates (16) and never drop items (32): clearing the old arena must not
+    // pop its plants off as loose items
+    private static final int FLAGS = 2 | 16 | 32;
 
     public static void build(ServerLevel level, BlockPos c, long seed) {
         RandomSource rng = RandomSource.create(seed);

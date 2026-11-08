@@ -82,7 +82,7 @@ public final class BurnedPennyMap {
         }
         setRefusals(p, 0);
         SebChat.say(seb, "..." + numberWord(n) + ".");
-        SebChat.say(seb, "fine. keep it. but you should see what happens to pennies like yours.");
+        SebChat.say(seb, "keep it, then. i hope it was worth it.");
         ItemStack map = create(p.server);
         if (!p.getInventory().add(map)) {
             p.drop(map, false);

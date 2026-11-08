@@ -164,10 +164,10 @@ final class BossAttacks {
 
     private void enter(Phase p) {
         switch (p) {
-            case GROOVE -> fight.say("you're still standing.");
-            case BUILD -> fight.say("the sky is coming down.");
+            case GROOVE -> fight.say("you look tired.");
+            case BUILD -> fight.say("look up.");
             case DARK -> {
-                fight.say("lights out.");
+                fight.say("can you see me?");
                 boss.setInvisible(true);
                 for (ServerPlayer pl : fight.alive()) {
                     pl.addEffect(new MobEffectInstance(MobEffects.DARKNESS, (p.to - p.from) + 20, 0, false, false, true));
@@ -177,21 +177,21 @@ final class BossAttacks {
             }
             case RETURN -> fight.say("there you are.");
             case CLIMAX -> {
-                fight.say("NOW.");
-                later(44 * 20, () -> fight.say("WHY WON'T YOU FALL"));
+                fight.say("i'm done being patient.");
+                later(44 * 20, () -> fight.say("FALL DOWN."));
             }
             case BREATHER -> {
                 for (ServerPlayer pl : fight.alive()) {
                     pl.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 300, 0, false, true, true));
                 }
                 boss.getNavigation().moveTo(BossFight.CENTER.getX() + 0.5, BossFight.CENTER.getY() + 1, BossFight.CENTER.getZ() + 0.5, 1.0);
-                later(10, () -> fight.say("why won't you just stop."));
-                later(250, () -> fight.say("it was one cent. one."));
-                later(500, () -> fight.say("i can hear the song ending. can you?"));
-                later(780, () -> fight.say("...no. not yet."));
+                later(10, () -> fight.say("you know what it's like? asking every day and getting laughed at?"));
+                later(250, () -> fight.say("one cent. that's what i was worth to you."));
+                later(500, () -> fight.say("i never asked for anything else."));
+                later(780, () -> fight.say("...i'm not done with you."));
             }
-            case DROP -> fight.say("NOT YET.");
-            case FINAL -> fight.say("EVERYTHING. ALL OF IT.");
+            case DROP -> fight.say("you don't get to rest.");
+            case FINAL -> fight.say("i hate you.");
             default -> {
             }
         }

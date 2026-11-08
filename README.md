@@ -160,7 +160,7 @@ Creative and spectator players are never killed (unless you turn off `spareCreat
 
 **How it starts.** Refuse him a penny **5 times in a row** while he begs: let the timer run out, put the penny away, or run.
 Giving him a penny resets the count, and the count survives death. The first four times he charges you as usual. The
-fifth time he doesn't. He says *"...five. fine. keep it."* and slips **Exhibit A** into your pocket: a map showing a
+fifth time he doesn't. He says *"...five. keep it, then. i hope it was worth it."* and slips **Exhibit A** into your pocket: a map showing a
 burned, melting penny. **Right-click him with it** to show it to him. He takes it, and **everyone online** is pulled
 into **The Red**.
 
@@ -171,8 +171,8 @@ air. There are pillars to hide behind, a few small lava pools (not everywhere) a
 
 | Song | What happens |
 |---|---|
-| arrival | You're **frozen**, and he stands a little way in front of you. *"you..."* |
-| 0:00 | The song starts. He talks for 42 seconds, ending with *"THE WORLD LOOKS RED. AND YOU WON'T LIVE TO HEAR THIS SONG END."* |
+| arrival | You're **frozen**, and he stands a little way in front of you. *"you."* |
+| 0:00 | The song starts. He talks for 42 seconds: five refusals, years of being laughed at, and nobody coming to save you. It ends quietly: *"i don't want your penny anymore. ... i want you."* |
 | **0:42** | The climax hits. A red **"Sebastian Hili ❤ 50,000"** boss bar appears and you can move. **You can't hurt him.** Survive. |
 | 0:42–1:50 | First climax: penny fans, dashes, eruptions, blink strikes |
 | 1:50–2:28 | Bass groove: shockwaves and blink strikes |
@@ -202,7 +202,7 @@ air. There are pillars to hide behind, a few small lava pools (not everywhere) a
 Armour, Protection, Fire Resistance and potions all help. If it's too hard or too easy, change `[boss] damageMultiplier`.
 
 **If you die** in The Red you respawn at home **with all your items and XP**. Once nobody is left alive, the fight ends:
-*"...not yet."* He goes back to normal and turns up again, and you'll have to earn a new map (5 more refusals) for
+*"next time."* He goes back to normal and turns up again, and you'll have to earn a new map (5 more refusals) for
 another try. **If anyone survives to the end, everyone wins**, and he never arrives on his own again. Only the spawn egg
 or `/seb spawn` can bring him back (and `/seb gone false` lets him return naturally). There's no escaping through portals mid-fight.
 
@@ -243,8 +243,8 @@ Things I added on top of the brief:
   *Debt Collector* (kill him).
 * **Original pixel art** for every texture, plus the skin.
 * **Boss fight extras:** he's 20% bigger and his eyes glow red the whole time; in The Dark only his eyes show. He
-  taunts you if you try to hit him ("that tickles."), he talks between the song's sections, and he says "one down." when
-  someone falls. Each attack has its own death message (e.g. *"forgot to jump"*, *"turned around too late"*,
+  tells you not to touch him if you try to hit him ("don't touch me."), he talks between the song's sections, and he
+  counts each player who falls ("one." "two."). Each attack has its own death message (e.g. *"forgot to jump"*, *"turned around too late"*,
   *"was found in the dark"*). He fades away by actually becoming see-through. There are two new advancements:
   *Exhibit A* and *The World Looks Red*.
 * Zinc counts as **beacon payment**, and gets standard Forge tags so other mods can use it.
@@ -261,7 +261,8 @@ dark trousers and black shoes. To wear it: **minecraft.net → Profile → Skin 
 
 ## 9. The demo video
 
-**Boss fight video:** `SebastianHili_BossFight.mp4` shows refusing him (one refusal live, then a command skips to the
+**Boss fight video:** (recorded before his dialogue was rewritten, so his lines in the video are the old ones.)
+`SebastianHili_BossFight.mp4` shows refusing him (one refusal live, then a command skips to the
 fourth), the fifth refusal and Exhibit A, showing him the map, the frozen intro, the whole fight with the song, him
 fading, and the trip home. The demo player has Resistance V so the full fight can be filmed. A scripted player can't
 dodge like a person, and without it the video would end early. Two stand-in "friends" are pulled in too; they can't

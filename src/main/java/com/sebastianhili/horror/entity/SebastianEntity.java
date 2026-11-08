@@ -1445,7 +1445,7 @@ public class SebastianEntity extends PathfinderMob {
         }
         if (isBoss() && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
             if (source.getEntity() instanceof ServerPlayer && hurtLineCooldown <= 0) {
-                SebChat.say(this, SebLines.pick(random, new String[]{"that tickles.", "you can't hurt me here.", "keep swinging.", "no."}));
+                SebChat.say(this, SebLines.pick(random, new String[]{"don't touch me.", "you never could."}));
                 hurtLineCooldown = 100;
             }
             return false;

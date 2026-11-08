@@ -493,7 +493,8 @@ public class SebGameTests {
         if (!com.sebastianhili.horror.boss.BossFight.start(seb, p)) h.fail("fight did not start");
         ServerLevel red = p.serverLevel();
         p.kill();
-        if (!red.getEntitiesOfClass(ItemEntity.class, new AABB(p.blockPosition()).inflate(5)).isEmpty()) h.fail("items were dropped in The Red");
+        var dropped = red.getEntitiesOfClass(ItemEntity.class, new AABB(p.blockPosition()).inflate(5));
+        if (!dropped.isEmpty()) h.fail("items were dropped in The Red: " + dropped.stream().map(e -> e.getItem().toString()).toList());
         ServerPlayer back = h.getLevel().getServer().getPlayerList().respawn(p, false);
         if (back.getInventory().countItem(Items.DIAMOND) != 5) h.fail("the diamonds should come back on respawn");
         if (back.level().dimension() == com.sebastianhili.horror.boss.BossFight.THE_RED) h.fail("respawn should be outside The Red");

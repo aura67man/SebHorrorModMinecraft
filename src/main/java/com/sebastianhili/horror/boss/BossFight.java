@@ -266,7 +266,7 @@ public final class BossFight {
         boss.getNavigation().stop();
         ServerPlayer near = nearest();
         if (near != null) boss.getLookControl().setLookAt(near, 360, 360);
-        if (crossed(T_YOU)) say("you...");
+        if (crossed(T_YOU)) say("you.");
         if (crossed(0)) {
             for (ServerPlayer p : alive()) startMusic(p);
         }
@@ -281,16 +281,15 @@ public final class BossFight {
 
     /** What he says over the first 42 seconds of the song (key = song tick). */
     private static final Map<Integer, String> INTRO = Map.ofEntries(
-            Map.entry(30, "you kept it. five times you looked me in the eye and kept it."),
-            Map.entry(130, "and then you show me THIS."),
-            Map.entry(210, "do you know what you did to that penny? do you know what it felt?"),
-            Map.entry(300, "i asked nicely. i always ask nicely."),
-            Map.entry(390, "every chest. every pocket. every single cent. i counted them all."),
-            Map.entry(490, "this is what the world looks like to me now."),
-            Map.entry(570, "red."),
-            Map.entry(630, "no sky. no bed. no spawn point. just you, me, and this song."),
-            Map.entry(720, "i'm done asking."),
-            Map.entry(790, "THE WORLD LOOKS RED. AND YOU WON'T LIVE TO HEAR THIS SONG END."));
+            Map.entry(40, "five times."),
+            Map.entry(120, "five times you held it out where i could see it. and put it back."),
+            Map.entry(220, "you didn't need it. you just wanted me to watch you keep it."),
+            Map.entry(320, "and then you bring me this."),
+            Map.entry(420, "i was patient with you. every single day."),
+            Map.entry(520, "i asked. i always asked. you always laughed."),
+            Map.entry(620, "nobody is coming for you here."),
+            Map.entry(720, "i don't want your penny anymore."),
+            Map.entry(800, "i want you."));
 
     private void begin() {
         bar = new ServerBossEvent(Component.literal("Sebastian Hili").withStyle(ChatFormatting.RED, ChatFormatting.BOLD)
@@ -318,7 +317,7 @@ public final class BossFight {
         boss.setPose(Pose.CROUCHING);
         boss.setShiftKeyDown(true);
         for (ServerPlayer p : alive()) p.removeEffect(MobEffects.DARKNESS);
-        say("...hah... hah...");
+        say("...hah...");
     }
 
     private void fading() {
@@ -329,9 +328,9 @@ public final class BossFight {
         boss.getNavigation().stop();
         ServerPlayer near = nearest();
         if (near != null) boss.getLookControl().setLookAt(near, 10, 10);
-        if (before < 80 && since >= 80) say("how are you... still...");
-        if (before < 160 && since >= 160) say("the world... doesn't look... so red anymore.");
-        if (before < 240 && since >= 240) say("...keep your penny.");
+        if (before < 80 && since >= 80) say("why won't you... just...");
+        if (before < 160 && since >= 160) say("this doesn't make us even.");
+        if (before < 240 && since >= 240) say("keep it. keep your penny.");
         if (t % 3 == 0) {
             arena.sendParticles(ParticleTypes.ASH, boss.getX(), boss.getY(0.6), boss.getZ(), 6, 0.4, 0.8, 0.4, 0.01);
             arena.sendParticles(ParticleTypes.SMOKE, boss.getX(), boss.getY(0.9), boss.getZ(), 2, 0.3, 0.5, 0.3, 0.02);
@@ -374,7 +373,7 @@ public final class BossFight {
             SebChat.joinMessage(server, false);
         } else {
             server.getPlayerList().broadcastSystemMessage(Component.literal("<Sebastian Hili> ").append(
-                    Component.literal("...not yet.").withStyle(ChatFormatting.DARK_RED)), false);
+                    Component.literal("next time.").withStyle(ChatFormatting.DARK_RED)), false);
             // he goes back to normal: he turns up again next to one of you
             for (UUID id : participants.keySet()) {
                 ServerPlayer p = server.getPlayerList().getPlayer(id);
@@ -421,7 +420,7 @@ public final class BossFight {
         if (active != null) {
             active.fallen++;
             String[] n = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"};
-            active.say(active.inArena.size() > 1 ? (active.fallen <= n.length ? n[active.fallen - 1] : "another") + " down." : "...");
+            active.say(active.fallen <= n.length ? n[active.fallen - 1] + "." : active.fallen + ".");
         }
     }
 
